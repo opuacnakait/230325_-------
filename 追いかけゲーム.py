@@ -13,6 +13,9 @@ CHARACTER_HEIGHT = 50
 # キャラクターの速度
 CHARACTER_SPEED = 5
 
+# 敵キャラクターの個数
+ENEMY_NUM = 40
+
 # 敵キャラクターの速度
 ENEMY_SPEED = 0.2
 
@@ -41,9 +44,14 @@ character_y = SCREEN_HEIGHT / 2
 character_direction = (0, 0)
 
 # 敵キャラクターの初期位置
-enemy_x = random.randint(0, SCREEN_WIDTH - CHARACTER_WIDTH)
-enemy_y = random.randint(0, SCREEN_HEIGHT - CHARACTER_HEIGHT)
-
+enemies = []
+for i in range(ENEMY_NUM):  # 3体の敵キャラクターを追加
+    enemy_x = random.randint(0, SCREEN_WIDTH - CHARACTER_WIDTH)
+    enemy_y = random.randint(0, SCREEN_HEIGHT - CHARACTER_HEIGHT)
+    enemy_speed = ENEMY_SPEED
+    enemy_direction = (0, 0)
+    enemies.append((enemy_x, enemy_y, enemy_speed, enemy_direction))
+    
 # フォントの設定
 font = pygame.font.SysFont(None, 48)
 
@@ -82,53 +90,52 @@ while True:
 
     # 敵キャラクターの移動
     # キャラクターと敵キャラクターの距離に応じた速度で移動する
-    dx = enemy_x - mouse_x
-    dy = enemy_y - mouse_y
-    distance = (dx ** 2 + dy ** 2) ** 0.5
-    if distance != 0:
-        enemy_direction = (-dx / distance, -dy / distance)
-        enemy_speed = min(distance / 200, 0.3)  # 距離に応じて速度を調整
-        enemy_x -= enemy_direction[0] * enemy_speed
-        enemy_y -= enemy_direction[1] * enemy_speed
-   
-    if distance > 0:
-        enemy_direction = (dx / distance, dy / distance)
-        if distance < ENEMY_DETECT_RADIUS:
-            enemy_speed = ENEMY_CHASE_SPEED
-        else:
-            enemy_speed = ENEMY_SPEED
+    for i in range(len(enemies)):
+        enemy_x, enemy_y, enemy_speed, enemy_direction = enemies[i]
+        dx = character_x - enemy_x
+        dy = character_y - enemy_y
+        distance = math.sqrt(dx ** 2 + dy ** 2)
+        if distance > 0:
+            enemy_direction = (-dx / distance, -dy / distance)
+            if distance < ENEMY_DETECT_RADIUS:
+                enemy_speed = ENEMY_CHASE_SPEED
+            else:
+                enemy_speed = ENEMY_SPEED
 
         # 画面端で固まらないように左右にランダムに移動する
-        if character_x < 20:
+        if enemy_x < 20:
             enemy_direction = (1, enemy_direction[1])
-        elif character_x > SCREEN_WIDTH - 20:
+        elif enemy_x > SCREEN_WIDTH - 20:
             enemy_direction = (-1, enemy_direction[1])
-        elif character_y < 20:
+        elif enemy_y < 20:
             enemy_direction = (enemy_direction[0], 1)
-        elif character_y > SCREEN_HEIGHT - 20:
+        elif enemy_y > SCREEN_HEIGHT - 20:
             enemy_direction = (enemy_direction[0], -1)
         elif random.random() < 0.1:
             enemy_direction = (random.uniform(-1, 1), random.uniform(-1, 1))
 
-        character_x += enemy_direction[0] * enemy_speed
-        character_y += enemy_direction[1] * enemy_speed
+        enemy_x += enemy_direction[0] * enemy_speed
+        enemy_y += enemy_direction[1] * enemy_speed
+        
+        # 敵キャラクターが画面外に出たら、反対側から出るようにする
+        if   enemy_x < 0:
+            enemy_x = 0
+        elif enemy_x + CHARACTER_WIDTH > SCREEN_WIDTH:
+            enemy_x = SCREEN_WIDTH - CHARACTER_WIDTH
+        if   enemy_y < 0:
+            enemy_y = 0
+        elif enemy_y + CHARACTER_HEIGHT > SCREEN_HEIGHT:
+            enemy_y = SCREEN_HEIGHT - CHARACTER_HEIGHT
+        enemies[i] = (enemy_x, enemy_y, enemy_speed, enemy_direction)
 
-    # 敵キャラクターが画面外に出たら、反対側から出るようにする
-    if   enemy_x < 0:
-         enemy_x = 0
-    elif enemy_x + CHARACTER_WIDTH > SCREEN_WIDTH:
-         enemy_x = SCREEN_WIDTH - CHARACTER_WIDTH
-    if   enemy_y < 0:
-         enemy_y = 0
-    elif enemy_y + CHARACTER_HEIGHT > SCREEN_HEIGHT:
-         enemy_y = SCREEN_HEIGHT - CHARACTER_HEIGHT
 
    # 画面の描画
     screen.fill(WHITE)
     pygame.draw.rect(screen, BLACK, [character_x, character_y, CHARACTER_WIDTH, CHARACTER_HEIGHT])
     #pygame.draw.rect(screen, RED  , [enemy_x, enemy_y, CHARACTER_WIDTH, CHARACTER_HEIGHT])
-    pygame.draw.circle(screen, RED, (enemy_x + CHARACTER_WIDTH/2, enemy_y + CHARACTER_HEIGHT/2), CHARACTER_WIDTH/2)
-
+    for i in range(len(enemies)):
+        enemy_x, enemy_y, enemy_speed, enemy_direction = enemies[i]
+        pygame.draw.circle(screen, RED, (enemy_x + CHARACTER_WIDTH/2, enemy_y + CHARACTER_HEIGHT/2), CHARACTER_WIDTH/2)
 
     # 画面の更新
     pygame.display.update()
