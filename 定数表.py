@@ -12,11 +12,16 @@ CHARACTER_SPEED = 5
 # 敵キャラクターの速度
 ENEMY_SPEED = 0.2
 
-#敵キャラクターがプレイヤーキャラクターを検出する範囲の半径
-ENEMY_DETECT_RADIUS = 20
+# プレイヤーが近くにいる場合に敵キャラクターが逃げる速度
+ENEMY_CHASE_SPEED = 0.8
 
-# プレイヤーが近くにいる場合に敵キャラクターが追いかける速度
-ENEMY_CHASE_SPEED = 0.4
+# 当たった時にダッシュで逃げる速度
+ENEMY_DASH_SPEED = 2.2
+
+
+#敵キャラクターがプレイヤーキャラクターを検出する範囲の半径
+ENEMY_DETECT_RADIUS = 30
+
 
 # 色
 WHITE = (255, 255, 255)

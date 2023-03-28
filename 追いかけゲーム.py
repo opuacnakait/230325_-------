@@ -3,7 +3,7 @@ import random
 import math
 import 定数表 as c
 # 敵キャラクター
-ENEMY_NUM = 40                  # 敵キャラクターの個数
+ENEMY_NUM = 80                  # 敵キャラクターの個数
 
 #スプライトベースの管理
 sprite_base = 1  #1であり。
@@ -29,7 +29,7 @@ for i in range(ENEMY_NUM):  # 3体の敵キャラクターを追加
     enemy_x = random.randint(0, c.SCREEN_WIDTH - c.CHARACTER_WIDTH)
     enemy_y = random.randint(0, c.SCREEN_HEIGHT - c.CHARACTER_HEIGHT)
     enemy_speed = c.ENEMY_SPEED
-    enemy_direction = (0, 0)
+    enemy_direction = pygame.math.Vector2(0, 0)
     enemies.append((enemy_x, enemy_y, enemy_speed, enemy_direction))
 
 
@@ -53,9 +53,11 @@ class Enemy_sprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.speed = c.ENEMY_SPEED
-        self.direction = (0, 0)
+        self.direction = pygame.math.Vector2(1, 0)
+        #self.direction = (0, 0)
         #以降ローカル変数
         self.collided = False
+        self.colidvector = pygame.math.Vector2(1, 0)
         self.localx = x
         self.localy = y
 
@@ -155,22 +157,51 @@ while True:
         #enemy_x, enemy_y, enemy_speed, enemy_direction = enemies[i]
         enemy_x =  sprites.localx
         enemy_y =  sprites.localy
-        enemy_direction = sprites.direction
+        enemy_direction = pygame.math.Vector2(sprites.direction)
         enemy_speed = sprites.speed
+        enemy_collided = sprites.collided
 
         character_x =player.rect.x 
         character_y =player.rect.y 
 
+        #
         dx = character_x - enemy_x
         dy = character_y - enemy_y
         distance = math.sqrt(dx ** 2 + dy ** 2)
-        if distance > 0:
-            enemy_direction = (-dx / distance, -dy / distance)
+  
+        #遠すぎると近付き方向
+        if distance > 200:
+            rnd1 = random.choice([-2,-1,0,0,2,2])
+            rnd2 = random.choice([-2,-1,0,0,2,2])
+            enemy_direction = (rnd1 * dx / distance, rnd2 * dy / distance)
+            enemy_speed = c.ENEMY_SPEED
+            #遠いと離れ方向
+        elif distance > 100:
+            rnd1 = random.choice([-3,-1,-1,-1,3,3])
+            rnd2 = random.choice([-3,-1,-1,-1,3,3])
+            enemy_direction = (rnd1 * dx / distance, rnd2 * dy / distance)
+            #enemy_direction = pygame.math.Vector2(enemy_direction) #(10*math.pi / 180)
+            #enemy_direction.rotate_ip( rnd * 10 *math.pi / 180)
+            enemy_speed = c.ENEMY_SPEED
+        #基本は逃げてく
+        elif distance > 0:
+            rnd1 = random.choice([-3,1,-1,1,-3,-3])
+            rnd2 = random.choice([-3,-1,1,-1,3,-3])
+            enemy_direction = (rnd1 * dx / distance, rnd2 * dy / distance)
+            #近いと速く逃げる
             if distance < c.ENEMY_DETECT_RADIUS:
                 enemy_speed = c.ENEMY_CHASE_SPEED
             else:
                 enemy_speed = c.ENEMY_SPEED
 
+
+        #ぶつかっていたら反対に逃げる
+        if enemy_collided == True:
+            enemy_direction =  pygame.math.Vector2(enemy_direction) #(10*math.pi / 180)
+            enemy_direction.rotate_ip(5*math.pi / 180)
+            enemy_speed = c.ENEMY_DASH_SPEED
+
+        """
         # 画面端で固まらないように左右にランダムに移動する
         if enemy_x < 0:
             enemy_direction = (1, enemy_direction[1])
@@ -182,6 +213,7 @@ while True:
             enemy_direction = (enemy_direction[0], -1)
         elif random.random() < 0.1:
             enemy_direction = (random.uniform(-1, 1), random.uniform(-1, 1))
+        """
 
         # not sprite_base
         #enemy_x += enemy_direction[0] * enemy_speed
@@ -203,18 +235,18 @@ while True:
         #スプライトに入れる  #sprite_base
         sprites.localx = enemy_x
         sprites.localy = enemy_y
-        sprites.direction = enemy_direction #(0,0)
+        sprites.direction = pygame.math.Vector2(enemy_direction) #(0,0)
         sprites.speed = enemy_speed #0
 
         #sprite_base
-        sprites.update()
+        #sprites.update()
 
         #not sprite_base
         #enemies[i] = (enemy_x, enemy_y, enemy_speed, enemy_direction)
 
         
     #スプライト単位で更新
-    i=0
+    #i=0
     for sprites in enemies_sprites:
         #キャラデータ取り出し  #not sprite_base
         #enemy_x, enemy_y, enemy_speed, enemy_direction = enemies[i]
@@ -225,6 +257,9 @@ while True:
             #当たったら
             if sprites.collided == False:  
                 sprites.collided = True    #状態変える
+                #反対側の位置を覚えておく
+                sprites.collidvector = sprites.direction
+                     
                 print("プレイヤーが敵に当たりました。")   
                 # 敵に一回あたったら、１点たす。
                 score += 1
@@ -258,8 +293,6 @@ while True:
     score_surface = font.render(f"Score: {score}", True, c.BLACK)
     score_rect = score_surface.get_rect(center=(c.SCREEN_WIDTH // 2, 50))
 
-    # スコアを画面に描画
-    screen.blit(score_surface, score_rect)
 
    # スプライトの表示
     #pygame.display.flip()         
@@ -269,6 +302,9 @@ while True:
     
     enemies_sprites.draw(screen)
     all_sprites.draw(screen)
-    
+
+    # スコアを画面に描画
+    screen.blit(score_surface, score_rect)
+
     # 画面の更新
     pygame.display.update()
