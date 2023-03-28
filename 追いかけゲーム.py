@@ -1,48 +1,24 @@
 import pygame
 import random
 import math
-
-# 画面のサイズ
-SCREEN_WIDTH = 640
-SCREEN_HEIGHT = 480
-
-# キャラクターのサイズ
-CHARACTER_WIDTH = 50
-CHARACTER_HEIGHT = 50
-
-# キャラクターの速度
-CHARACTER_SPEED = 5
-
-# 敵キャラクターの速度
-ENEMY_SPEED = 0.2
-
-#敵キャラクターがプレイヤーキャラクターを検出する範囲の半径
-ENEMY_DETECT_RADIUS = 20
-
-# プレイヤーが近くにいる場合に敵キャラクターが追いかける速度
-ENEMY_CHASE_SPEED = 0.4
-
-# 色
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
+import 定数表 as c
 
 # Pygameの初期化
 pygame.init()
 
 # 画面の作成
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((c.SCREEN_WIDTH, c.SCREEN_HEIGHT))
 
 # キャラクターの初期位置
-character_x = SCREEN_WIDTH / 2
-character_y = SCREEN_HEIGHT / 2
+character_x = c.SCREEN_WIDTH / 2
+character_y = c.SCREEN_HEIGHT / 2
 
 # キャラクターの移動方向
 character_direction = (0, 0)
 
 # 敵キャラクターの初期位置
-enemy_x = random.randint(0, SCREEN_WIDTH - CHARACTER_WIDTH)
-enemy_y = random.randint(0, SCREEN_HEIGHT - CHARACTER_HEIGHT)
+enemy_x = random.randint(0, c.SCREEN_WIDTH - CHARACTER_WIDTH)
+enemy_y = random.randint(0, c.SCREEN_HEIGHT - CHARACTER_HEIGHT)
 
 # フォントの設定
 font = pygame.font.SysFont(None, 48)
@@ -73,12 +49,12 @@ while True:
     # キャラクターが画面外に出たら、反対側から出るようにする
     if character_x < 0:
         character_x = 0
-    elif character_x + CHARACTER_WIDTH > SCREEN_WIDTH:
-        character_x = SCREEN_WIDTH - CHARACTER_WIDTH
+    elif character_x + CHARACTER_WIDTH > c.SCREEN_WIDTH:
+        character_x = c.SCREEN_WIDTH - CHARACTER_WIDTH
     if character_y < 0:
         character_y = 0
-    elif character_y + CHARACTER_HEIGHT > SCREEN_HEIGHT:
-        character_y = SCREEN_HEIGHT - CHARACTER_HEIGHT
+    elif character_y + CHARACTER_HEIGHT > c.SCREEN_HEIGHT:
+        character_y = c.SCREEN_HEIGHT - CHARACTER_HEIGHT
 
     # 敵キャラクターの移動
     # キャラクターと敵キャラクターの距離に応じた速度で移動する
@@ -101,11 +77,11 @@ while True:
         # 画面端で固まらないように左右にランダムに移動する
         if character_x < 20:
             enemy_direction = (1, enemy_direction[1])
-        elif character_x > SCREEN_WIDTH - 20:
+        elif character_x > c.SCREEN_WIDTH - 20:
             enemy_direction = (-1, enemy_direction[1])
         elif character_y < 20:
             enemy_direction = (enemy_direction[0], 1)
-        elif character_y > SCREEN_HEIGHT - 20:
+        elif character_y > c.SCREEN_HEIGHT - 20:
             enemy_direction = (enemy_direction[0], -1)
         elif random.random() < 0.1:
             enemy_direction = (random.uniform(-1, 1), random.uniform(-1, 1))
@@ -116,12 +92,12 @@ while True:
     # 敵キャラクターが画面外に出たら、反対側から出るようにする
     if   enemy_x < 0:
          enemy_x = 0
-    elif enemy_x + CHARACTER_WIDTH > SCREEN_WIDTH:
-         enemy_x = SCREEN_WIDTH - CHARACTER_WIDTH
+    elif enemy_x + CHARACTER_WIDTH > c.SCREEN_WIDTH:
+         enemy_x = c.SCREEN_WIDTH - CHARACTER_WIDTH
     if   enemy_y < 0:
          enemy_y = 0
-    elif enemy_y + CHARACTER_HEIGHT > SCREEN_HEIGHT:
-         enemy_y = SCREEN_HEIGHT - CHARACTER_HEIGHT
+    elif enemy_y + CHARACTER_HEIGHT > c.SCREEN_HEIGHT:
+         enemy_y = c.SCREEN_HEIGHT - CHARACTER_HEIGHT
 
    # 画面の描画
     screen.fill(WHITE)
