@@ -18,6 +18,7 @@ character_y = c.SCREEN_HEIGHT / 2
 # キャラクターの移動方向
 character_direction = (0, 0)
 
+
 # 敵キャラクターの初期位置
 enemies = []
 for i in range(ENEMY_NUM):  # 3体の敵キャラクターを追加
@@ -77,6 +78,7 @@ font = pygame.font.SysFont(None, 48)
 gameover_text = font.render("Game Over", True, c.BLACK)
 
 # ゲームループ
+debug = 0
 while True:
     # イベント処理
     for event in pygame.event.get():
@@ -131,6 +133,7 @@ while True:
                 enemy_speed = c.ENEMY_CHASE_SPEED
             else:
                 enemy_speed = c.ENEMY_SPEED
+
 
 
         # 画面端で固まらないように左右にランダムに移動する
