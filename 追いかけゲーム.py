@@ -44,7 +44,7 @@ class Enemy_sprite(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = pygame.Surface((r*2, r*2), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, (255, 0, 0), (r, r), r)
+        pygame.draw.circle(self.image, (c.RED), (r, r), r)
         #self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -54,6 +54,12 @@ class Enemy_sprite(pygame.sprite.Sprite):
         """
         self.speed = c.ENEMY_SPEED
         self.direction = (0, 0)
+        self.collided = False
+
+    def change_color(self, color):
+        self.color = color
+        self.image = pygame.Surface((r*2, r*2), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, (color), (r, r), r)
 
 # スプライトグループの設定
 all_sprites = pygame.sprite.Group()
@@ -73,6 +79,9 @@ for i in range(ENEMY_NUM):  # ENEMY_NUM体の敵キャラクターを追加
    
 # フォントの設定
 font = pygame.font.SysFont(None, 48)
+
+ # スコアの初期値
+score = 0
 
 # ゲームオーバーのテキスト
 gameover_text = font.render("Game Over", True, c.BLACK)
@@ -173,24 +182,58 @@ while True:
 
         enemies[i] = (enemy_x, enemy_y, enemy_speed, enemy_direction)
 
-    #スプライトの座標を更新
+        
+    #スプライト単位で更新
     i=0
     for sprites in enemies_sprites:
+        #キャラデータ取り出し
         enemy_x, enemy_y, enemy_speed, enemy_direction = enemies[i]
+
+        # 当たり判定を行う
+        #if pygame.sprite.spritecollide(player, sprites, False) == True:
+        if pygame.sprite.collide_rect(player, sprites) == True:
+            #当たったら
+            if sprites.collided == False:  
+                sprites.collided = True    #状態変える
+                print("プレイヤーが敵に当たりました。")   
+                # 敵に一回あたったら、１点たす。
+                score += 1
+                sprites.change_color(c.BLUE) #状態変える               
+        else:
+            # 当たっていなかったら当たり準備
+            sprites.collided = False     #状態戻す
+            sprites.change_color(c.RED)  #状態戻す              
+
+        #キャラデータ格納
+        enemies[i] = (enemy_x, enemy_y, enemy_speed, enemy_direction)
+
+   #スプライトに書き込む
+    i=0
+    for sprites in enemies_sprites:
+        #キャラデータ読み出しのみ
+        enemy_x, enemy_y, enemy_speed, enemy_direction = enemies[i]
+
         #スプライトに入れる
         sprites.rect.x = enemy_x
         sprites.rect.y = enemy_y
         sprites.direction =  (0,0) #enemy_direction
         sprites.speed = 0 #enemy_speed #0
         i +=1
-        
+
    # 画面の描画
     screen.fill(c.WHITE)
-    
+
+    # スコア表示用Surfaceの作成
+    score_surface = font.render(f"Score: {score}", True, c.BLACK)
+    score_rect = score_surface.get_rect(center=(c.SCREEN_WIDTH // 2, 50))
+
+    # スコアを画面に描画
+    screen.blit(score_surface, score_rect)
+
    # スプライトの表示
     #pygame.display.flip()         
     #all_sprites.update()
-    
+
     enemies_sprites.draw(screen)
     all_sprites.draw(screen)
     
