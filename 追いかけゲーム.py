@@ -5,10 +5,6 @@ import 定数表 as c
 # 敵キャラクター
 ENEMY_NUM = 80                  # 敵キャラクターの個数
 
-#スプライトベースの管理
-sprite_base = 1  #1であり。
-
-
 # Pygameの初期化
 pygame.init()
 
@@ -25,7 +21,7 @@ character_direction = (0, 0)
 
 # 敵キャラクターの初期位置
 enemies = []
-for i in range(ENEMY_NUM):  # 3体の敵キャラクターを追加
+for i in range(ENEMY_NUM):  #配列を用意
     enemy_x = random.randint(0, c.SCREEN_WIDTH - c.CHARACTER_WIDTH)
     enemy_y = random.randint(0, c.SCREEN_HEIGHT - c.CHARACTER_HEIGHT)
     enemy_speed = c.ENEMY_SPEED
@@ -42,6 +38,35 @@ class Player(pygame.sprite.Sprite):
         self.image.fill(c.BLACK)
         self.rect = self.image.get_rect()
         self.rect.center = (c.CHARACTER_WIDTH / 1, c.CHARACTER_HEIGHT / 1)   
+        self.direction = (0,0)
+        self.character_x =0
+        self.character_y =0
+
+    def update(self):    
+        # マウスの座標を取得
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+       # キャラクターの移動
+        dx = mouse_x - self.character_x
+        dy = mouse_y - self.character_y
+        distance = (dx ** 2 + dy ** 2) ** 0.5
+        if distance > c.CHARACTER_SPEED * 1:
+           self.direction = (dx / distance, dy / distance)
+           self.character_x += self.direction[0] * c.CHARACTER_SPEED * 1
+           self.character_y += self.direction[1] * c.CHARACTER_SPEED * 1
+
+        # キャラクターが画面外に出ないようにする。
+        if self.character_x < 0:
+            self.character_x = 0
+        elif self.character_x + c.CHARACTER_WIDTH > c.SCREEN_WIDTH:
+            self.character_x = c.SCREEN_WIDTH - c.CHARACTER_WIDTH
+        if self.character_y < 0:
+            self.character_y = 0
+        elif self.character_y + c.CHARACTER_HEIGHT > c.SCREEN_HEIGHT:
+            self.character_y = c.SCREEN_HEIGHT - c.CHARACTER_HEIGHT
+        #座標に入れる。
+        self.rect.x = self.character_x
+        self.rect.y = self.character_y
 #敵キャラ
 r=25
 class Enemy_sprite(pygame.sprite.Sprite):
@@ -95,18 +120,17 @@ class Enemy_sprite(pygame.sprite.Sprite):
 all_sprites = pygame.sprite.Group()
 enemies_sprites = pygame.sprite.Group()
 
-# 自キャラ
+# 自キャラのスプライトを生成
 player = Player()
 all_sprites.add(player)
 
-# 敵キャラ
+# 敵キャラのスプライトを生成
 for i in range(ENEMY_NUM):  # ENEMY_NUM体の敵キャラクターを追加
     enemy_x = random.randint(0, c.SCREEN_WIDTH - c.CHARACTER_WIDTH)
     enemy_y = random.randint(0, c.SCREEN_HEIGHT - c.CHARACTER_HEIGHT)
     enemy_sprite = Enemy_sprite(enemy_x, enemy_y)  # 敵キャラのスプライトを作成
     enemies_sprites.add(enemy_sprite)
-    #all_sprites.add(enemy_sprite)
-   
+    
 # フォントの設定
 font = pygame.font.SysFont(None, 48)
 
@@ -125,36 +149,11 @@ while True:
             pygame.quit()
             exit()
 
-    # マウスの座標を取得
-    mouse_x, mouse_y = pygame.mouse.get_pos()
-
-   # キャラクターの移動
-    dx = mouse_x - character_x
-    dy = mouse_y - character_y
-    distance = (dx ** 2 + dy ** 2) ** 0.5
-    if distance > c.CHARACTER_SPEED * 1:
-        character_direction = (dx / distance, dy / distance)
-        character_x += character_direction[0] * c.CHARACTER_SPEED * 1
-        character_y += character_direction[1] * c.CHARACTER_SPEED * 1
-
-    # キャラクターが画面外に出たら、反対側から出るようにする
-    if character_x < 0:
-        character_x = 0
-    elif character_x + c.CHARACTER_WIDTH > c.SCREEN_WIDTH:
-        character_x = c.SCREEN_WIDTH - c.CHARACTER_WIDTH
-    if character_y < 0:
-        character_y = 0
-    elif character_y + c.CHARACTER_HEIGHT > c.SCREEN_HEIGHT:
-        character_y = c.SCREEN_HEIGHT - c.CHARACTER_HEIGHT
-    #スプライトに入れる
-    player.rect.x = character_x
-    player.rect.y = character_y
-     
+ 
     # 敵キャラクターの移動
     # キャラクターと敵キャラクターの距離に応じた速度で移動する
     #for i in range(len(enemies)):
     for sprites in enemies_sprites: #sprite_base
-        #enemy_x, enemy_y, enemy_speed, enemy_direction = enemies[i]
         enemy_x =  sprites.localx
         enemy_y =  sprites.localy
         enemy_direction = pygame.math.Vector2(sprites.direction)
@@ -201,58 +200,16 @@ while True:
             enemy_direction.rotate_ip(5*math.pi / 180)
             enemy_speed = c.ENEMY_DASH_SPEED
 
-        """
-        # 画面端で固まらないように左右にランダムに移動する
-        if enemy_x < 0:
-            enemy_direction = (1, enemy_direction[1])
-        elif enemy_x > c.SCREEN_WIDTH - 0:
-            enemy_direction = (-1, enemy_direction[1])
-        elif enemy_y < 0:
-            enemy_direction = (enemy_direction[0], 1)
-        elif enemy_y > c.SCREEN_HEIGHT - 0:
-            enemy_direction = (enemy_direction[0], -1)
-        elif random.random() < 0.1:
-            enemy_direction = (random.uniform(-1, 1), random.uniform(-1, 1))
-        """
-
-        # not sprite_base
-        #enemy_x += enemy_direction[0] * enemy_speed
-        #enemy_y += enemy_direction[1] * enemy_speed
-        
-
-        """"        
-        # 敵キャラクターが画面外に出ないようにする
-        if   enemy_x < 0:
-            enemy_x = 0
-        elif enemy_x + c.CHARACTER_WIDTH > c.SCREEN_WIDTH:
-            enemy_x = c.SCREEN_WIDTH - c.CHARACTER_WIDTH
-        if   enemy_y < 0:
-            enemy_y = 0
-        elif enemy_y + c.CHARACTER_HEIGHT > c.SCREEN_HEIGHT:
-            enemy_y = c.SCREEN_HEIGHT - c.CHARACTER_HEIGHT
-        """
 
         #スプライトに入れる  #sprite_base
         sprites.localx = enemy_x
         sprites.localy = enemy_y
         sprites.direction = pygame.math.Vector2(enemy_direction) #(0,0)
         sprites.speed = enemy_speed #0
-
-        #sprite_base
-        #sprites.update()
-
-        #not sprite_base
-        #enemies[i] = (enemy_x, enemy_y, enemy_speed, enemy_direction)
-
-        
-    #スプライト単位で更新
-    #i=0
+      
     for sprites in enemies_sprites:
-        #キャラデータ取り出し  #not sprite_base
-        #enemy_x, enemy_y, enemy_speed, enemy_direction = enemies[i]
 
         # 当たり判定を行う
-        #if pygame.sprite.spritecollide(player, sprites, False) == True:
         if pygame.sprite.collide_rect(player, sprites) == True:
             #当たったら
             if sprites.collided == False:  
@@ -269,23 +226,6 @@ while True:
             sprites.collided = False     #状態戻す
             sprites.change_color(c.RED)  #状態戻す              
 
-        #キャラデータ格納 not  #sprite_base
-        #enemies[i] = (enemy_x, enemy_y, enemy_speed, enemy_direction)
-
-    """"not #sprite_base
-   #スプライトに書き込む
-    i=0
-    for sprites in enemies_sprites:
-        #キャラデータ読み出しのみ
-        enemy_x, enemy_y, enemy_speed, enemy_direction = enemies[i]
-
-        #スプライトに入れる
-        sprites.rect.x = enemy_x
-        sprites.rect.y = enemy_y
-        sprites.direction =  (0,0) #enemy_direction
-        sprites.speed = 0 #enemy_speed #0
-        i +=1
-    """
    # 画面の描画
     screen.fill(c.WHITE)
 
