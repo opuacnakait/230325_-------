@@ -157,6 +157,25 @@ class Enemy_sprite(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2(enemy_direction) #(0,0)
         self.speed = enemy_speed #0
 
+    def hit_check(self):
+        global score
+        # 当たり判定を行う
+        if pygame.sprite.collide_rect(player, self) == True:
+            #当たったら
+            if self.collided == False:  
+                self.collided = True    #状態変える
+                #反対側の位置を覚えておく
+                self.collidvector = self.direction
+                     
+                print("プレイヤーが敵に当たりました。")   
+                # 敵に一回あたったら、１点たす。
+                score += 1
+                self.change_color(c.BLUE) #状態変える               
+        else:
+            # 当たっていなかったら当たり準備
+            self.collided = False     #状態戻す
+            self.change_color(c.RED)  #状態戻す   
+                   
 
     def change_color(self, color):
         self.color = color
@@ -205,29 +224,15 @@ while True:
 
  
     # 敵キャラクターの移動
-    # キャラクターと敵キャラクターの距離に応じた速度で移動する
-    #for i in range(len(enemies)):
     for sprites in enemies_sprites: #sprite_base
+        
+        #ぶるぶる動かしたい場合
         sprites.buruburu()
 
-    for sprites in enemies_sprites:
+        #向きを変える動きにしたい場合
 
-        # 当たり判定を行う
-        if pygame.sprite.collide_rect(player, sprites) == True:
-            #当たったら
-            if sprites.collided == False:  
-                sprites.collided = True    #状態変える
-                #反対側の位置を覚えておく
-                sprites.collidvector = sprites.direction
-                     
-                print("プレイヤーが敵に当たりました。")   
-                # 敵に一回あたったら、１点たす。
-                score += 1
-                sprites.change_color(c.BLUE) #状態変える               
-        else:
-            # 当たっていなかったら当たり準備
-            sprites.collided = False     #状態戻す
-            sprites.change_color(c.RED)  #状態戻す              
+        #当たり判定をして、当たった状態を残す。
+        sprites.hit_check()
 
    # 画面の描画
     screen.fill(c.WHITE)
