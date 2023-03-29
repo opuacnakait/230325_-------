@@ -102,7 +102,61 @@ class Enemy_sprite(pygame.sprite.Sprite):
         
         self.rect.x  =  self.localx     
         self.rect.y  =  self.localy
-    
+
+    def buruburu(self):
+        enemy_x =  self.localx
+        enemy_y =  self.localy
+        enemy_direction = pygame.math.Vector2(self.direction)
+        enemy_speed = self.speed
+        enemy_collided = self.collided
+
+        character_x =player.rect.x 
+        character_y =player.rect.y 
+
+        #
+        dx = character_x - enemy_x
+        dy = character_y - enemy_y
+        distance = math.sqrt(dx ** 2 + dy ** 2)
+        #遠すぎると近付き方向
+        if distance > 200:
+            rnd1 = random.choice([-2,-1,0,0,2,2])
+            rnd2 = random.choice([-2,-1,0,0,2,2])
+            enemy_direction = (rnd1 * dx / distance, rnd2 * dy / distance)
+            enemy_speed = c.ENEMY_SPEED
+            #遠いと離れ方向
+        elif distance > 100:
+            rnd1 = random.choice([-3,-1,-1,-1,3,3])
+            rnd2 = random.choice([-3,-1,-1,-1,3,3])
+            enemy_direction = (rnd1 * dx / distance, rnd2 * dy / distance)
+            #enemy_direction = pygame.math.Vector2(enemy_direction) #(10*math.pi / 180)
+            #enemy_direction.rotate_ip( rnd * 10 *math.pi / 180)
+            enemy_speed = c.ENEMY_SPEED
+        #基本は逃げてく
+        elif distance > 0:
+            rnd1 = random.choice([-3,1,-1,1,-3,-3])
+            rnd2 = random.choice([-3,-1,1,-1,3,-3])
+            enemy_direction = (rnd1 * dx / distance, rnd2 * dy / distance)
+            #近いと速く逃げる
+            if distance < c.ENEMY_DETECT_RADIUS:
+                enemy_speed = c.ENEMY_CHASE_SPEED
+            else:
+                enemy_speed = c.ENEMY_SPEED
+
+
+        #ぶつかっていたら反対に逃げる
+        if enemy_collided == True:
+            enemy_direction =  pygame.math.Vector2(enemy_direction) #(10*math.pi / 180)
+            enemy_direction.rotate_ip(5*math.pi / 180)
+            enemy_speed = c.ENEMY_DASH_SPEED
+  
+        
+
+        #スプライトに入れる  #sprite_base
+        self.localx = enemy_x
+        self.localy = enemy_y
+        self.direction = pygame.math.Vector2(enemy_direction) #(0,0)
+        self.speed = enemy_speed #0
+
 
     def change_color(self, color):
         self.color = color
@@ -154,59 +208,8 @@ while True:
     # キャラクターと敵キャラクターの距離に応じた速度で移動する
     #for i in range(len(enemies)):
     for sprites in enemies_sprites: #sprite_base
-        enemy_x =  sprites.localx
-        enemy_y =  sprites.localy
-        enemy_direction = pygame.math.Vector2(sprites.direction)
-        enemy_speed = sprites.speed
-        enemy_collided = sprites.collided
+        sprites.buruburu()
 
-        character_x =player.rect.x 
-        character_y =player.rect.y 
-
-        #
-        dx = character_x - enemy_x
-        dy = character_y - enemy_y
-        distance = math.sqrt(dx ** 2 + dy ** 2)
-  
-        #遠すぎると近付き方向
-        if distance > 200:
-            rnd1 = random.choice([-2,-1,0,0,2,2])
-            rnd2 = random.choice([-2,-1,0,0,2,2])
-            enemy_direction = (rnd1 * dx / distance, rnd2 * dy / distance)
-            enemy_speed = c.ENEMY_SPEED
-            #遠いと離れ方向
-        elif distance > 100:
-            rnd1 = random.choice([-3,-1,-1,-1,3,3])
-            rnd2 = random.choice([-3,-1,-1,-1,3,3])
-            enemy_direction = (rnd1 * dx / distance, rnd2 * dy / distance)
-            #enemy_direction = pygame.math.Vector2(enemy_direction) #(10*math.pi / 180)
-            #enemy_direction.rotate_ip( rnd * 10 *math.pi / 180)
-            enemy_speed = c.ENEMY_SPEED
-        #基本は逃げてく
-        elif distance > 0:
-            rnd1 = random.choice([-3,1,-1,1,-3,-3])
-            rnd2 = random.choice([-3,-1,1,-1,3,-3])
-            enemy_direction = (rnd1 * dx / distance, rnd2 * dy / distance)
-            #近いと速く逃げる
-            if distance < c.ENEMY_DETECT_RADIUS:
-                enemy_speed = c.ENEMY_CHASE_SPEED
-            else:
-                enemy_speed = c.ENEMY_SPEED
-
-
-        #ぶつかっていたら反対に逃げる
-        if enemy_collided == True:
-            enemy_direction =  pygame.math.Vector2(enemy_direction) #(10*math.pi / 180)
-            enemy_direction.rotate_ip(5*math.pi / 180)
-            enemy_speed = c.ENEMY_DASH_SPEED
-
-
-        #スプライトに入れる  #sprite_base
-        sprites.localx = enemy_x
-        sprites.localy = enemy_y
-        sprites.direction = pygame.math.Vector2(enemy_direction) #(0,0)
-        sprites.speed = enemy_speed #0
-      
     for sprites in enemies_sprites:
 
         # 当たり判定を行う
