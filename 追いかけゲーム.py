@@ -67,13 +67,12 @@ class Player(pygame.sprite.Sprite):
         #座標に入れる。
         self.rect.x = self.character_x
         self.rect.y = self.character_y
-#敵キャラ
-r=25
+
 class Enemy_sprite(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.Surface((r*2, r*2), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, (c.RED), (r, r), r)
+        self.image = pygame.Surface((c.CIRCLE_R*2, c.CIRCLE_R*2), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, (c.RED), (c.CIRCLE_R, c.CIRCLE_R), c.CIRCLE_R)
         #self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
@@ -102,6 +101,32 @@ class Enemy_sprite(pygame.sprite.Sprite):
         
         self.rect.x  =  self.localx     
         self.rect.y  =  self.localy
+    
+    def mukiwokaeru(self):
+        #初期化
+        vector = pygame.math.Vector2(0,0)
+        vector1 = pygame.math.Vector2(0,0)
+        vector2 = pygame.math.Vector2(0,0)
+        NIGEKAKU = [
+            [ 90,  60, -90, -90, -90, -90, -90, -90],
+            [100,  80, -60, -60, -60, -60, -60, -60],
+            [110, 100, -30, -30, -30, -30, -30, -30],
+            [120, 120,   0,   0,   0,   0,   0,   0],
+            [130, 140,  30,  30,  30,  30,  30,  30],
+            [140, 160,  60,  60,  60,  60,  60,  60],
+            [150, 180,  90,  90,  90,  90,  90,  90],
+            [160, 200, 120, 120, 120, 120, 120, 120]
+        ]
+        vector = pygame.math.Vector2(self.rect.center) - pygame.math.Vector2(player.rect.center)        
+        distance =vector.length()
+        angle = vector.angle_to(pygame.math.Vector2(1, 0))
+
+        index = NIGEKAKU[int(distance/c.SCREEN_WIDTH*7)][int(angle/45)]
+        if distance !=0:
+            vector1 = vector.normalize()
+            vector2 = vector1.rotate(index)
+        self.direction = vector2
+        self.speed =  c.ENEMY_SPEED
 
     def buruburu(self):
         enemy_x =  self.localx
@@ -179,8 +204,8 @@ class Enemy_sprite(pygame.sprite.Sprite):
 
     def change_color(self, color):
         self.color = color
-        self.image = pygame.Surface((r*2, r*2), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, (color), (r, r), r)
+        self.image = pygame.Surface((c.CIRCLE_R*2, c.CIRCLE_R*2), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, (color), (c.CIRCLE_R, c.CIRCLE_R), c.CIRCLE_R)
 
     def change_speed(self, speed):
         self.speed = speed
@@ -227,9 +252,10 @@ while True:
     for sprites in enemies_sprites: #sprite_base
         
         #ぶるぶる動かしたい場合
-        sprites.buruburu()
+        #sprites.buruburu()
 
         #向きを変える動きにしたい場合
+        sprites.mukiwokaeru()
 
         #当たり判定をして、当たった状態を残す。
         sprites.hit_check()
